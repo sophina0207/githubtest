@@ -1,0 +1,116 @@
+多人协作开发
+将本地仓库数据推送到远程分支
+git push [remote-name] [branch]
+如果在你推送之前，已经有人往远程推送过数据，那么在推送之前，需要执行git pull [remote-name] [branch] ，此操作是为了拉取本地没有但是远程端有的数据（即是合并数据），然后再执行push操作。
+
+公钥的位置：~/.ssh
+查看公钥
+cd ~/.ssh
+ll
+如果显示id_rsa id_rsa.pub known_hosts三个文件，则表示已经存在公钥了，.pub文件就是公钥，另一个文件就是秘钥，如果没有这三个文件，或者是.ssh文件都没有，则表示不存在公钥
+ssh-keygen命令可以创建公钥
+$ ssh-keygen 
+Generating public/private rsa key pair.
+Enter file in which to save the key (/Users/schacon/.ssh/id_rsa): 
+Enter passphrase (empty for no passphrase): 
+Enter same passphrase again: 
+Your identification has been saved in /Users/schacon/.ssh/id_rsa.
+Your public key has been saved in /Users/schacon/.ssh/id_rsa.pub.
+The key fingerprint is:
+43:c5:5b:5f:b1:f1:50:43:ad:20:a6:92:6a:1f:9a:3a schacon@agadorlaptop.local
+它先要求你确认保存公钥的位置（.ssh/id_rsa），然后它会让你重复一个密码两次，如果不想在使用公钥的时候输入密码，可以留空。
+
+
+
+分支的使用
+比如开发一个blog，三人协作开发。A:article分支，B:view分支，C：admin分支
+在开发过程中三人代码并没有合并，直到某天，三人的开发内容都已完成，C将A、B分支进行合并。首先C应该执行git pull将其他两个分支拉取并执行gitmerge将三个分支内容合并，然后删除另外两个分支。A和B
+再git pull C分支的内容，此时这个分支就是最终要发行的版本，假设取名为master，设为版本1.接下来进行版本2的开发，可以新建一个分支为dev，就可以在该分支进行开发。
+
+git add filename/
+git commit -m 'log messsage' 
+git push
+以上是完整的提交过程，也可以跳过使用暂存区域的方式
+git commit -a -m 'commit'	#Git 就会自动把所有已经跟踪过的文件暂存起来一并提交,注意是所有已跟踪过的文件，如果是未跟踪过的文件，是不会被提交的。
+git push [remote-name] [branch-name]					#推送数据到远程仓库。只有在所克隆的服务器上有写权限，或者同一时刻没有其他人在推数据，这条命令才会如期完成任务。如果在你推数据前，已经有其他人推送了若干更新，那你的推送操作就会被驳回。你必须先把他们的更新抓取到本地，并到自己的项目中，然后才可以再次推送。
+
+git clone git://github.com/schacon/grit.git mygrit 		#本地会创建mygrit目录，存放git仓库数据
+git status												#查看文件状态
+git update-index --assume-unchanged your_file_path		#不想继续追踪某个文件
+git update-index --no-assume-unchanged your_file_path	#如果再次想继续追踪某个文件
+git checkout filename									#从服务器端拉取单个文件，如果在工作目录中删除某个文件，可以使用该命令将该文件重新从服务端拉下来
+git checkout . 											#拉取当前目录文件
+git config --global user.email little_star14@sina.cn	#设置email 和user
+git config --global user.name "joe-PC"
+git branch -a 											#查看服务端分支
+git branch    											#查看本地分支
+git branch -b	[branch-name]							#创建分支并切换到该分支下
+git branch  dev  										#创建dev分支
+git branch -d [branch-name]								#删除分支
+git branch --merge										#查看哪些分支合并到当前分支，然后可以利用上一条命令删除其他已经合并的分支。
+git branch --no-merged									#查看尚未合并的分支，如果此时你现在想删除该分支，则会报错，导致失败，如果强制需要删除可以添加-D
+git checkout dev 										#切换到dev分支
+git config --list 										#查看已有的配置信息
+git config user.name  									# 查看某个环境变量的值，只要把特定的变量名称跟在后面即可。
+git help <verb> 										#获取帮助help，比如：git help config
+man git <verb>
+git <verb> --help
+git diff												#此命令比较的是工作目录中当前文件和暂存区域快照之间的差异，也就是修改之后还没有暂存起来的变化内容。，红色字体区域每行之前有一个-，表示此处被删除，绿色区域前有一个+，表示新增加
+git diff --cached 										#已经暂存起来的文件和上次提交时的快照之间的差异
+git diff --staged（推荐使用）
+git rm filename											#从git中移除（暂存区域移除），并且也从工作目录中删除，这样以后就不会出现在未跟踪文件清单中了。
+git rm --cached filename 								#从git中移除，但是保留工作目录中的指定文件，方便稍后在.gitignore文件中补上
+git rm log/\*.log										#此命令删除所有 log/ 目录下扩展名为 .log 的文件，递归删除，如果不添加反斜杠\，则只删除log/目录下的.log文件。
+git mv file_from file_to								#在 Git 中对文件改名
+git log 												#查看提交历史，会按提交时间列出所有的更新，最近的更新排在最上面，每次更新都有一个 SHA-1 校验和、作者的名字和电子邮件地址、提交时间，最后缩进一个段落显示提交说明。
+git log -p -2											#常用 -p 选项展开显示每次提交的内容差异，用 -2 则仅显示最近的两次更新
+git commit --amend										#撤销刚刚的提交操作（仅仅是针对commit的操作），执行此命令，可以修改刚才的提交提示。或者在此命令前执行git add操作，将未提交的文件添加，然后再执行此操作。
+git reset HEAD filename									#从暂存区域中撤销该文件。比如用git add *将所有修改的文件提交到暂存区域，结果某个文件不需要提交，可以用该命令撤销，然后回到修改状态。			
+git checkout -- filename								#撤销刚刚对此文件的修改，回到修改之前的状态，
+git remote 												#查看当前的远程仓库，只显示每个远程库的简短名字
+git remote -v											#–verbose的简写，显示对应的克隆地址
+git remote add [shortname] [url]						#添加远程仓库
+git fetch [remote-name]									#从远程仓库抓取数据到本地
+git remote show [remote-name]							#查看某个远程仓库的详细信息。除了对应的克隆地址外，它还给出了许多额外的信息。它友善地告诉你如果是在 master 分支，就可以用 git pull 命令抓取数据合并到本地。另外还列出了所有处于跟踪状态中的远端分支。
+git pull [remote-name] [branch]							#从远程仓库获取本地没有的数据
+git remote rename [old-name] [new-name]					#修改某个远程仓库的简短名称。注意，对远程仓库的重命名，也会使对应的分支名称发生变化，原来的 pb/master 分支现在成了 paul/master。
+git remote rm [remote-name]								#碰到远端仓库服务器迁移，或者原来的克隆镜像不再使用，又或者某个参与者不再贡献代码，那么需要移除对应的远端仓库
+git tag													#显示已有的标签
+git tag -a [tag-name] -m 'my version'					#创建一个含附注类型的标签,用 -a （译注：取 annotated 的首字母）指定标签名字即可,而 -m 选项则指定了对应的标签说明
+git show [tag-name]										#查看相应标签的版本信息，并连同显示打标签时的提交对象。
+git merge [branch-name]									#合并两个分支。在当前分支合并branch-name分支
+git clone --bare my_project my_project.git				#my_project是已经存在的仓库，my_project.git是要生成的纯目录仓库文件---不包含当前工作目录的仓库，此目录内容与my_project中的.git目录下的内容相同
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
